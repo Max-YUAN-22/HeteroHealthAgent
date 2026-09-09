@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HeteroHealthAgent · 亚健康筛查可解释多模态智能体 (Demo)</title>
+  <meta name="description" content="Evidence-grounded multimodal health agent demo for sub-health screening under heterogeneous, asynchronous and incomplete data." />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <div class="brand"><span class="hetero">Hetero</span>HealthAgent</div>
+        <div class="subtitle">面向亚健康筛查与居家健康管理的 · 异构 / 异步 / 不完整多模态可解释智能体</div>
+      </div>
+      <span class="badge">PROTOTYPE · rule-based</span>
+    </header>
+
+    <div class="disclaimer" id="disclaimer"></div>
+
+    <!-- Row 1: 亚健康总览 + 证据 -->
+    <div class="grid">
+      <section class="panel" id="panel-overview">
+        <h2>🩺 亚健康总览 <small style="color:var(--muted);font-weight:400">Sub-health Overview</small></h2>
+        <p class="hint">当前状态相对参考范围/个人基线的综合评估。点击下方维度可开/关某模态，观察证据完整度与置信度变化。</p>
+        <div class="overview-top">
+          <div class="gauge" id="gauge">
+            <svg width="128" height="128" viewBox="0 0 128 128">
+              <circle class="track" cx="64" cy="64" r="54" fill="none" stroke-width="14" />
+              <circle class="fill" id="gaugeFill" cx="64" cy="64" r="54" fill="none" stroke-width="14"
+                stroke-linecap="round" stroke-dasharray="339.29" stroke-dashoffset="339.29" />
+            </svg>
+            <div class="label"><b id="riskScore">–</b><span>亚健康倾向</span></div>
+          </div>
+          <div class="overview-meta">
+            <span class="risk-pill" id="riskPill">–</span>
+            <div class="metric-row">
+              <div class="metric">
+                <b id="completeness">–</b><span>证据完整度</span>
+                <div class="bar"><i id="barComplete" style="width:0%"></i></div>
+              </div>
+              <div class="metric">
+                <b id="confidence">–</b><span>判断置信度</span>
+                <div class="bar"><i id="barConf" style="width:0%"></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dims" id="dims"></div>
+      </section>
+
+      <section class="panel" id="panel-evidence">
+        <h2>🔍 证据 <small style="color:var(--muted);font-weight:400">Evidence</small></h2>
+        <p class="hint">异常证据与正常证据并列展示，避免"所有指标都异常"的误导。No evidence → no claim。</p>
+        <div class="evi-cols">
+          <div class="evi-col">
+            <h3>⚠️ 需关注 / 异常</h3>
+            <div id="eviAbnormal"></div>
+          </div>
+          <div class="evi-col">
+            <h3>✅ 正常 / 稳定</h3>
+            <div id="eviNormal"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Row 2: Missing/Freshness + Counterfactual -->
+    <div class="grid mt">
+      <section class="panel" id="panel-missing">
+        <h2>🕒 缺失 / 时效性 <small style="color:var(--muted);font-weight:400">Missing / Freshness</small></h2>
+        <p class="hint">系统显式知道"缺了什么、多久没测、这类数据通常多久更新一次"。</p>
+        <table class="mtable">
+          <thead><tr><th>模态 / 字段</th><th>最近测量</th><th>状态</th></tr></thead>
+          <tbody id="freshBody"></tbody>
+        </table>
+      </section>
+
+      <section class="panel" id="panel-cf">
+        <h2>🔀 反事实分析 <small style="color:var(--muted);font-weight:400">Counterfactual</small></h2>
+        <p class="cf-hint">"如果去掉 / 补充某模态会怎样？" 在左侧总览点击维度即可开关模态，这里显示对比。</p>
+        <div id="cfBody"></div>
+        <p class="cf-note" id="cfNote"></p>
+      </section>
+    </div>
+
+    <!-- Row 3: Agent Chat -->
+    <div class="grid full mt">
+      <section class="panel" id="panel-chat">
+        <h2>💬 Agent 对话 <small style="color:var(--muted);font-weight:400">Evidence-grounded Chat</small></h2>
+        <p class="hint">Agent 的回答先由结构化 evidence 驱动，再由语言层表达；证据不足会询问 / 请求补测 / abstain。</p>
+        <div class="chat">
+          <div class="chat-log" id="chatLog"></div>
+          <div class="chips" id="chips"></div>
+          <div class="chat-input">
+            <input id="chatInput" placeholder="问问 Agent，例如：我算亚健康吗？" autocomplete="off" />
+            <button id="chatSend">发送</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Row 4: Robot screen -->
+    <div class="grid full mt">
+      <section class="panel" id="panel-robot">
+        <h2>🤖 机器人屏幕 <small style="color:var(--muted);font-weight:400">Robot Screen (embodiment layer)</small></h2>
+        <div class="robot">
+          <div class="face">🤖</div>
+          <div class="say" id="robotSay"></div>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      HeteroHealthAgent · Proposal v1.0 Demo · 面向 IEEE JBHI 投稿 ·
+      本系统输出属于亚健康筛查/解释性辅助，<b>不构成医学诊断</b>。
+    </footer>
+  </div>
+
+  <script src="assets/data.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
