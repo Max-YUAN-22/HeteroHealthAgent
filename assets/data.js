@@ -1,8 +1,11 @@
 /* =============================================================================
- * HeteroHealthAgent — Data model & rule-based engine (v2, advanced)
+ * HeteroHealthAgent — Data model & rule-based engine (v2, bilingual)
  * -----------------------------------------------------------------------------
  * Prototype：Case 001 来自匿名化真实多模态健康报告；判断由规则引擎生成，
  * 不接真实模型，不构成医学诊断。
+ *
+ * 双语：数据字段带 *En 后缀（nameEn / labelEn / reasonEn ...），
+ * 引擎文本输出同时带中英两个字段，由 app.js 按当前语言选取。
  *
  * 设计借鉴（模块层面）：
  *   Apple Health / Health Connect  → 多源数据接入 (sources)
@@ -20,66 +23,71 @@
 const CASE_001 = {
   id: 'case-001',
   title: 'Case 001 · 匿名化真实报告',
+  titleEn: 'Case 001 · De-identified real report',
   subject: '老年男性 · Age group 75+ · De-identified',
+  subjectEn: 'Older adult, male · Age group 75+ · De-identified',
   disclaimer: '亚健康筛查 / 解释性辅助原型，不构成医学诊断。',
+  disclaimerEn: 'Sub-health screening / explanatory-aid prototype. Not a medical diagnosis.',
 
   modalities: [
     { id: 'psych', name: '神经心理 / 压力', nameEn: 'Psych & Stress', icon: '🧠',
       system: 'psych', available: true, freshnessDays: 0, typicalPeriodDays: 1, quality: 0.9,
       metrics: [
-        { key: 'mood', label: '情绪指数', value: 75, unit: '', dir: 'low', lo: 0, hi: 60, mean: 62, std: 8, history: [58, 61, 64, 60, 66, 70, 73, 75] },
-        { key: 'anxiety', label: '焦虑指数', value: 75, unit: '', dir: 'low', lo: 0, hi: 60, mean: 60, std: 7, history: [55, 58, 62, 59, 64, 68, 72, 75] },
+        { key: 'mood', label: '情绪指数', labelEn: 'Mood Index', value: 75, unit: '', dir: 'low', lo: 0, hi: 60, mean: 62, std: 8, history: [58, 61, 64, 60, 66, 70, 73, 75] },
+        { key: 'anxiety', label: '焦虑指数', labelEn: 'Anxiety Index', value: 75, unit: '', dir: 'low', lo: 0, hi: 60, mean: 60, std: 7, history: [55, 58, 62, 59, 64, 68, 72, 75] },
       ] },
     { id: 'ans', name: '自主神经', nameEn: 'Autonomic', icon: '🌿',
       system: 'autonomic', available: true, freshnessDays: 0, typicalPeriodDays: 1, quality: 0.85,
       metrics: [
-        { key: 'ans_bal', label: '自主神经平衡', value: 25.9, unit: '', dir: 'high', lo: 40, hi: 100, mean: 31, std: 6, history: [34, 33, 30, 29, 28, 27, 26, 25.9] },
-        { key: 'lfhf', label: 'LF/HF', value: 1.6, unit: '', dir: 'in', lo: 0.5, hi: 2.0, mean: 1.5, std: 0.4, history: [1.3, 1.4, 1.5, 1.6, 1.5, 1.7, 1.6, 1.6] },
+        { key: 'ans_bal', label: '自主神经平衡', labelEn: 'ANS Balance', value: 25.9, unit: '', dir: 'high', lo: 40, hi: 100, mean: 31, std: 6, history: [34, 33, 30, 29, 28, 27, 26, 25.9] },
+        { key: 'lfhf', label: 'LF/HF', labelEn: 'LF/HF', value: 1.6, unit: '', dir: 'in', lo: 0.5, hi: 2.0, mean: 1.5, std: 0.4, history: [1.3, 1.4, 1.5, 1.6, 1.5, 1.7, 1.6, 1.6] },
       ] },
     { id: 'hrv', name: 'HRV 心率变异', nameEn: 'HRV', icon: '💓',
       system: 'recovery', available: true, freshnessDays: 0, typicalPeriodDays: 1, quality: 0.8,
       metrics: [
-        { key: 'pnn50', label: 'pNN50', value: 0.6, unit: '%', dir: 'high', lo: 3, hi: 30, mean: 3.2, std: 2, history: [4, 3.5, 3, 2.2, 1.8, 1.2, 0.9, 0.6] },
-        { key: 'sdnn', label: 'SDNN', value: 28, unit: 'ms', dir: 'high', lo: 35, hi: 120, mean: 35, std: 8, history: [40, 38, 36, 34, 32, 30, 29, 28] },
-        { key: 'rmssd', label: 'RMSSD', value: 18, unit: 'ms', dir: 'high', lo: 20, hi: 90, mean: 25, std: 7, history: [30, 28, 26, 24, 22, 20, 19, 18] },
+        { key: 'pnn50', label: 'pNN50', labelEn: 'pNN50', value: 0.6, unit: '%', dir: 'high', lo: 3, hi: 30, mean: 3.2, std: 2, history: [4, 3.5, 3, 2.2, 1.8, 1.2, 0.9, 0.6] },
+        { key: 'sdnn', label: 'SDNN', labelEn: 'SDNN', value: 28, unit: 'ms', dir: 'high', lo: 35, hi: 120, mean: 35, std: 8, history: [40, 38, 36, 34, 32, 30, 29, 28] },
+        { key: 'rmssd', label: 'RMSSD', labelEn: 'RMSSD', value: 18, unit: 'ms', dir: 'high', lo: 20, hi: 90, mean: 25, std: 7, history: [30, 28, 26, 24, 22, 20, 19, 18] },
       ] },
     { id: 'cardio', name: '心血管', nameEn: 'Cardiovascular', icon: '🩺',
       system: 'cardio', available: true, freshnessDays: 6, typicalPeriodDays: 1, quality: 0.9,
       metrics: [
-        { key: 'sbp', label: '收缩压 SBP', value: 141, unit: 'mmHg', dir: 'low', lo: 90, hi: 120, mean: 132, std: 9, history: [128, 130, 133, 129, 135, 138, 140, 141] },
-        { key: 'dbp', label: '舒张压 DBP', value: 75, unit: 'mmHg', dir: 'in', lo: 60, hi: 80, mean: 77, std: 6, history: [78, 76, 79, 75, 77, 74, 76, 75] },
-        { key: 'hr', label: '心率 HR', value: 72, unit: 'bpm', dir: 'in', lo: 60, hi: 100, mean: 71, std: 5, history: [70, 72, 69, 73, 71, 74, 72, 72] },
-        { key: 'spo2', label: 'SpO₂', value: 96, unit: '%', dir: 'high', lo: 95, hi: 100, mean: 97, std: 1, history: [97, 98, 96, 97, 97, 96, 97, 96] },
+        { key: 'sbp', label: '收缩压 SBP', labelEn: 'SBP', value: 141, unit: 'mmHg', dir: 'low', lo: 90, hi: 120, mean: 132, std: 9, history: [128, 130, 133, 129, 135, 138, 140, 141] },
+        { key: 'dbp', label: '舒张压 DBP', labelEn: 'DBP', value: 75, unit: 'mmHg', dir: 'in', lo: 60, hi: 80, mean: 77, std: 6, history: [78, 76, 79, 75, 77, 74, 76, 75] },
+        { key: 'hr', label: '心率 HR', labelEn: 'Heart Rate', value: 72, unit: 'bpm', dir: 'in', lo: 60, hi: 100, mean: 71, std: 5, history: [70, 72, 69, 73, 71, 74, 72, 72] },
+        { key: 'spo2', label: 'SpO₂', labelEn: 'SpO₂', value: 96, unit: '%', dir: 'high', lo: 95, hi: 100, mean: 97, std: 1, history: [97, 98, 96, 97, 97, 96, 97, 96] },
       ] },
     { id: 'micro', name: 'NFC 微循环', nameEn: 'Microcirculation', icon: '🩸',
       system: 'micro', available: true, freshnessDays: 3, typicalPeriodDays: 30, quality: 0.75,
       metrics: [
-        { key: 'cap', label: '毛细血管密度', value: 3.33, unit: '/mm', dir: 'high', lo: 4, hi: 8, mean: 4.0, std: 0.5, history: [4.2, 4.1, 3.9, 3.8, 3.6, 3.5, 3.4, 3.33] },
-        { key: 'nfc', label: 'NFC 健康评分', value: 79.6, unit: '', dir: 'high', lo: 70, hi: 100, mean: 78, std: 5, history: [76, 77, 80, 79, 81, 78, 80, 79.6] },
+        { key: 'cap', label: '毛细血管密度', labelEn: 'Capillary Density', value: 3.33, unit: '/mm', dir: 'high', lo: 4, hi: 8, mean: 4.0, std: 0.5, history: [4.2, 4.1, 3.9, 3.8, 3.6, 3.5, 3.4, 3.33] },
+        { key: 'nfc', label: 'NFC 健康评分', labelEn: 'NFC Health Score', value: 79.6, unit: '', dir: 'high', lo: 70, hi: 100, mean: 78, std: 5, history: [76, 77, 80, 79, 81, 78, 80, 79.6] },
       ] },
     { id: 'urine', name: '尿检 / 代谢', nameEn: 'Urinalysis', icon: '🧪',
       system: 'metabolic', available: true, freshnessDays: 42, typicalPeriodDays: 90, quality: 0.7,
       metrics: [
-        { key: 'protein', label: '尿蛋白', value: '+1', unit: '', dir: 'cat', bad: true, history: [] },
-        { key: 'nitrite', label: '亚硝酸盐', value: '+', unit: '', dir: 'cat', bad: true, history: [] },
-        { key: 'uca', label: '尿钙', value: 10, unit: '', dir: 'in', lo: 1, hi: 12, mean: 7, std: 3, history: [6, 8, 7, 9, 8, 10, 9, 10] },
+        { key: 'protein', label: '尿蛋白', labelEn: 'Urine Protein', value: '+1', unit: '', dir: 'cat', bad: true, history: [] },
+        { key: 'nitrite', label: '亚硝酸盐', labelEn: 'Nitrite', value: '+', unit: '', dir: 'cat', bad: true, history: [] },
+        { key: 'uca', label: '尿钙', labelEn: 'Urine Calcium', value: 10, unit: '', dir: 'in', lo: 1, hi: 12, mean: 7, std: 3, history: [6, 8, 7, 9, 8, 10, 9, 10] },
       ] },
   ],
 
   missing: [
-    { label: 'BMI', reason: '未采集身高/体重', impact: '影响代谢与心血管风险背景' },
-    { label: '既往史', reason: '问卷未填写', impact: '影响个体基线与风险分层' },
+    { label: 'BMI', labelEn: 'BMI', reason: '未采集身高/体重', reasonEn: 'Height / weight not collected',
+      impact: '影响代谢与心血管风险背景', impactEn: 'Affects metabolic & cardiovascular context' },
+    { label: '既往史', labelEn: 'Medical History', reason: '问卷未填写', reasonEn: 'Questionnaire not filled in',
+      impact: '影响个体基线与风险分层', impactEn: 'Affects personal baseline & risk stratification' },
   ],
 };
 
 /* 身体系统（Function Health 式分组）—— 用于 System Profile 面板 */
 const SYSTEMS = [
-  { id: 'psych', name: '心理 / 压力', icon: '🧠' },
-  { id: 'autonomic', name: '自主神经', icon: '🌿' },
-  { id: 'recovery', name: '恢复 / HRV', icon: '💓' },
-  { id: 'cardio', name: '心血管', icon: '🩺' },
-  { id: 'micro', name: '微循环', icon: '🩸' },
-  { id: 'metabolic', name: '代谢 / 尿检', icon: '🧪' },
+  { id: 'psych', name: '心理 / 压力', nameEn: 'Psych / Stress', icon: '🧠' },
+  { id: 'autonomic', name: '自主神经', nameEn: 'Autonomic', icon: '🌿' },
+  { id: 'recovery', name: '恢复 / HRV', nameEn: 'Recovery / HRV', icon: '💓' },
+  { id: 'cardio', name: '心血管', nameEn: 'Cardiovascular', icon: '🩺' },
+  { id: 'micro', name: '微循环', nameEn: 'Microcirculation', icon: '🩸' },
+  { id: 'metabolic', name: '代谢 / 尿检', nameEn: 'Metabolic / Urine', icon: '🧪' },
 ];
 
 /* =============================================================================
@@ -168,10 +176,10 @@ function confidence(mods, missingCount) {
   return Math.round(comp * penalty * 100);
 }
 function riskLabel(s) {
-  if (s == null) return { text: '证据不足', level: 'unknown' };
-  if (s >= 60) return { text: '较高亚健康倾向', level: 'high' };
-  if (s >= 35) return { text: '中度亚健康倾向', level: 'mid' };
-  return { text: '偏低 / 相对良好', level: 'low' };
+  if (s == null) return { text: '证据不足', en: 'Insufficient evidence', level: 'unknown' };
+  if (s >= 60) return { text: '较高亚健康倾向', en: 'Elevated sub-health tendency', level: 'high' };
+  if (s >= 35) return { text: '中度亚健康倾向', en: 'Moderate sub-health tendency', level: 'mid' };
+  return { text: '偏低 / 相对良好', en: 'Low / relatively good', level: 'low' };
 }
 
 // --- XAI：模态贡献度（attribution）= 可靠度 × 偏离程度 ---
@@ -180,7 +188,7 @@ function attribution(mods) {
   const raw = active.map((m) => {
     const devMetrics = m.metrics.filter(deviatesWorse).length;
     const sev = m.metrics.length ? devMetrics / m.metrics.length : 0;
-    return { id: m.id, name: m.name, icon: m.icon, w: reliability(m) * (0.3 + sev) };
+    return { id: m.id, name: m.name, nameEn: m.nameEn, icon: m.icon, w: reliability(m) * (0.3 + sev) };
   });
   const tot = raw.reduce((s, r) => s + r.w, 0) || 1;
   return raw.map((r) => ({ ...r, pct: Math.round((r.w / tot) * 100) }))
@@ -190,28 +198,43 @@ function attribution(mods) {
 // --- 主动补测建议（信息价值排序） ---
 function measurementRequests(mods, missing) {
   const reqs = [];
-  missing.forEach((mi) => reqs.push({ what: mi.label, why: `缺失：${mi.impact}`, priority: 3 }));
+  missing.forEach((mi) => reqs.push({
+    what: mi.label, whatEn: mi.labelEn,
+    why: `缺失：${mi.impact}`, whyEn: `Missing: ${mi.impactEn}`, priority: 3,
+  }));
   mods.forEach((m) => {
-    if (!m.available) reqs.push({ what: m.name, why: '整模态缺失，无法评估该系统', priority: 3 });
-    else if (isStale(m)) reqs.push({ what: m.name, why: `数据已 ${m.freshnessDays} 天，可能过期`, priority: 2 });
-    else if (m.quality < 0.75) reqs.push({ what: m.name, why: '数据质量偏低，建议复测', priority: 1 });
+    if (!m.available) reqs.push({
+      what: m.name, whatEn: m.nameEn,
+      why: '整模态缺失，无法评估该系统', whyEn: 'Entire modality missing — system cannot be assessed', priority: 3,
+    });
+    else if (isStale(m)) reqs.push({
+      what: m.name, whatEn: m.nameEn,
+      why: `数据已 ${m.freshnessDays} 天，可能过期`, whyEn: `Data is ${m.freshnessDays} days old — possibly stale`, priority: 2,
+    });
+    else if (m.quality < 0.75) reqs.push({
+      what: m.name, whatEn: m.nameEn,
+      why: '数据质量偏低，建议复测', whyEn: 'Low data quality — retest recommended', priority: 1,
+    });
   });
   return reqs.sort((a, b) => b.priority - a.priority);
 }
 
 /* --- 数据接入：校验一条新读数（ingestion & validation） --- */
 function validateReading(mod, metric, rawValue) {
-  const issues = [];
+  const issues = [], issuesEn = [];
   const v = Number(rawValue);
-  if (metric.dir !== 'cat' && Number.isNaN(v)) issues.push('数值无法解析');
+  if (metric.dir !== 'cat' && Number.isNaN(v)) { issues.push('数值无法解析'); issuesEn.push('Value cannot be parsed'); }
   // 生理合理性范围（宽松边界）
   const plaus = { sbp: [60, 260], dbp: [30, 160], hr: [30, 220], spo2: [50, 100], pnn50: [0, 100] };
   if (plaus[metric.key]) {
     const [lo, hi] = plaus[metric.key];
-    if (v < lo || v > hi) issues.push(`超出生理合理范围 [${lo}, ${hi}]`);
+    if (v < lo || v > hi) {
+      issues.push(`超出生理合理范围 [${lo}, ${hi}]`);
+      issuesEn.push(`Out of physiological range [${lo}, ${hi}]`);
+    }
   }
   const quality = issues.length ? 0.5 : 0.95;
-  return { ok: issues.length === 0, issues, quality, value: metric.dir === 'cat' ? rawValue : v };
+  return { ok: issues.length === 0, issues, issuesEn, quality, value: metric.dir === 'cat' ? rawValue : v };
 }
 
 window.HHA = {

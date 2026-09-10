@@ -244,3 +244,13 @@ textarea { resize: vertical; min-height: 90px; }
 .chat-gpt .msg { font-size: 14px; }
 .chat-gpt .chat-input input { height: 46px; font-size: 14px; border-radius: 12px; }
 .chat-gpt .chat-input button { height: 46px; padding: 0 24px; border-radius: 12px; font-size: 14px; }
+
+/* ---------- Language switch ---------- */
+.lang-sw { display: inline-flex; background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 2px; gap: 2px; }
+.lang-sw button {
+  border: none; background: transparent; color: var(--muted); cursor: pointer;
+  font-size: 11px; font-weight: 700; padding: 4px 11px; border-radius: 999px;
+  font-family: inherit; transition: background 0.15s, color 0.15s;
+}
+.lang-sw button:hover { color: var(--text); }
+.lang-sw button.active { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; }
