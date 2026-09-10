@@ -15,17 +15,17 @@
         <div class="mark">🩺</div>
         <div>
           <div class="name">Hetero<span>Health</span>Agent</div>
-          <small>多模态健康智能体 · Demo v2</small>
+          <small>亚健康多模态智能体 · Concept Prototype</small>
         </div>
       </div>
-      <div style="padding: 0 8px 14px"><span class="badge">PROTOTYPE · RULE-BASED</span></div>
+      <div style="padding: 0 8px 14px"><span class="badge">CONCEPT PROTOTYPE · v0.1</span></div>
       <nav class="nav">
-        <a class="active" data-view="view-overview"><span class="ic">🏠</span>总览 Overview</a>
+        <a class="active" data-view="view-overview"><span class="ic">🏠</span>首页 · 总览</a>
         <a data-view="view-evidence"><span class="ic">🔍</span>证据与趋势</a>
         <a data-view="view-status"><span class="ic">🕒</span>缺失与时效</a>
         <a data-view="view-ingest"><span class="ic">📥</span>新数据分析</a>
         <a data-view="view-cf"><span class="ic">🔀</span>反事实分析</a>
-        <a data-view="view-chat"><span class="ic">💬</span>Agent 对话</a>
+        <a data-view="view-chat"><span class="ic">🤖</span>机器人与边界</a>
       </nav>
       <div class="foot">Case 001 · 匿名化真实多模态报告<br />亚健康筛查辅助 · <b>不构成医学诊断</b></div>
     </aside>
@@ -33,14 +33,29 @@
     <!-- ============ Main ============ -->
     <main class="main">
 
-      <!-- ======== 视图：总览 ======== -->
+      <!-- ======== 视图：总览（首页） ======== -->
       <section class="view active" id="view-overview">
-        <div class="page-head">
-          <div><h1>总览 Overview</h1><p id="ovSubject"></p></div>
+        <div class="hero">
+          <h1><span class="hetero">Hetero</span>HealthAgent</h1>
+          <p class="tagline">面向<b>亚健康筛查</b>与居家健康管理：融合异构、异步、不完整的多模态生理数据，由可解释 Agent 告诉你 —— 发生了什么、为什么、缺什么数据、当前结论有多可靠。</p>
+          <p class="hero-meta"><span class="badge">CONCEPT PROTOTYPE · v0.1 · RULE-BASED</span><span id="ovSubject"></span></p>
         </div>
         <div class="disclaimer" id="disclaimer"></div>
 
-        <div class="grid g4">
+        <section class="panel">
+          <h2>💬 问 Agent <small>evidence-grounded · 像对话一样，直接问它</small></h2>
+          <p class="hint">回答由结构化证据驱动；证据不足或超出范围（如诊断）时会明确 abstain，而不是编造。</p>
+          <div class="chat chat-gpt">
+            <div class="chat-log" id="chatLog"></div>
+            <div class="chips" id="chips"></div>
+            <div class="chat-input">
+              <input id="chatInput" placeholder="问我：我算亚健康吗？为什么？缺什么数据？如果没有 HRV 会怎样？" autocomplete="off" />
+              <button class="btn" id="chatSend">发送</button>
+            </div>
+          </div>
+        </section>
+
+        <div class="grid g4 mt">
           <section class="panel stat">
             <div class="k">Readiness 就绪度</div>
             <div class="v" id="statReady">–</div>
@@ -235,40 +250,30 @@
         </section>
       </section>
 
-      <!-- ======== 视图：Agent 对话 ======== -->
+      <!-- ======== 视图：机器人与边界 ======== -->
       <section class="view" id="view-chat">
         <div class="page-head">
-          <div><h1>Agent 对话 Evidence-grounded Chat</h1>
-          <p>回答先由结构化证据驱动，再由语言层表达；证据不足会 abstain，而不是编造。</p></div>
+          <div><h1>机器人终端 Embodiment &amp; Boundaries</h1>
+          <p>同一 Agent 后端可以接到机器人屏幕 / 3D 数字人等终端；对话窗口在首页总览。</p></div>
         </div>
 
         <div class="grid g2">
           <section class="panel">
-            <h2>💬 与 Agent 对话</h2>
-            <div class="chat">
-              <div class="chat-log" id="chatLog"></div>
-              <div class="chips" id="chips"></div>
-              <div class="chat-input">
-                <input id="chatInput" placeholder="问点什么，例如：我算亚健康吗？" autocomplete="off" />
-                <button class="btn" id="chatSend">发送</button>
-              </div>
+            <h2>🤖 机器人屏幕 <small>embodiment layer</small></h2>
+            <p class="hint">实时同步 Agent 最新结论的摘要。</p>
+            <div class="robot">
+              <div class="face">🤖</div>
+              <div class="say" id="robotSay"></div>
             </div>
+            <p class="hint mt">💬 <a href="#" data-goto="view-overview">点此返回首页，与 Agent 对话 ↑</a></p>
           </section>
-          <div>
-            <section class="panel">
-              <h2>🤖 机器人屏幕 <small>embodiment layer</small></h2>
-              <div class="robot">
-                <div class="face">🤖</div>
-                <div class="say" id="robotSay"></div>
-              </div>
-            </section>
-            <section class="panel mt">
-              <h2>🛡️ 能力与边界</h2>
-              <div class="insight"><div class="ic">✅</div><div class="bd"><b>能做</b><div class="meta">基于当前证据解释状态、指出缺失、给补测建议、做反事实推演。</div></div></div>
-              <div class="insight"><div class="ic">🚫</div><div class="bd"><b>不做</b><div class="meta">诊断疾病、推荐药物剂量、替代医生判断。</div></div></div>
-              <div class="insight"><div class="ic">🤷</div><div class="bd"><b>证据不足时</b><div class="meta">明确 abstain 并说明缺什么，而不是给出看似确定的回答。</div></div></div>
-            </section>
-          </div>
+          <section class="panel">
+            <h2>🛡️ 能力与边界</h2>
+            <p class="hint">宁可说"不知道 / 证据不足"，也不给出看似确定的回答。</p>
+            <div class="insight"><div class="ic">✅</div><div class="bd"><b>能做</b><div class="meta">基于当前证据解释状态、指出缺失、给补测建议、做反事实推演。</div></div></div>
+            <div class="insight"><div class="ic">🚫</div><div class="bd"><b>不做</b><div class="meta">诊断疾病、推荐药物剂量、替代医生判断。</div></div></div>
+            <div class="insight"><div class="ic">🤷</div><div class="bd"><b>证据不足时</b><div class="meta">明确 abstain 并说明缺什么，而不是给出看似确定的回答。</div></div></div>
+          </section>
         </div>
       </section>
 

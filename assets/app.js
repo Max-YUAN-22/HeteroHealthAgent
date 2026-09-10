@@ -50,14 +50,18 @@
   }
 
   /* ================= 路由 ================= */
+  function goto(view) {
+    document.querySelectorAll('.nav a').forEach((x) => x.classList.toggle('active', x.dataset.view === view));
+    document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
+    $(view).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
   document.querySelectorAll('.nav a').forEach((a) => {
-    a.addEventListener('click', (e) => {
-      e.preventDefault();
-      document.querySelectorAll('.nav a').forEach((x) => x.classList.remove('active'));
-      a.classList.add('active');
-      document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
-      $(a.dataset.view).classList.add('active');
-    });
+    a.addEventListener('click', (e) => { e.preventDefault(); goto(a.dataset.view); });
+  });
+  // 页内跳转链接（如「机器人终端」页的"返回首页对话"）
+  document.querySelectorAll('[data-goto]').forEach((el) => {
+    el.addEventListener('click', (e) => { e.preventDefault(); goto(el.dataset.goto); });
   });
 
   /* ================= 总览 ================= */

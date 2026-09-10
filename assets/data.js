@@ -20,7 +20,7 @@
 const CASE_001 = {
   id: 'case-001',
   title: 'Case 001 · 匿名化真实报告',
-  subject: '80 岁 · 男性',
+  subject: '老年男性 · Age group 75+ · De-identified',
   disclaimer: '亚健康筛查 / 解释性辅助原型，不构成医学诊断。',
 
   modalities: [
